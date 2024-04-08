@@ -14,6 +14,7 @@ export const invokeLambdaFunction = async (path, body) => {
     }),
   };
 
+  console.log("Lambda Params: ", params);
   const data = await lambda.invoke(params).promise();
   return data;
 };
