@@ -1,4 +1,5 @@
 import AWS from "aws-sdk";
+import { v4 as uuidv4 } from "uuid";
 
 const S3_BUCKET_NAME = "resume-parser-s3";
 const SNS_TOPIC_NAME = "ResumeParserSNS";
@@ -10,10 +11,13 @@ const AWS_SESSION_TOKEN =
 
 AWS.config.update({
   region: AWS_REGION,
-  accessKeyId: AWS_ACCESS_KEY_ID,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  sessionToken: AWS_SESSION_TOKEN,
+  credentials: {
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    sessionToken: AWS_SESSION_TOKEN,
+  },
 });
+
 const s3 = new AWS.S3();
 const textract = new AWS.Textract();
 const sns = new AWS.SNS();
@@ -31,7 +35,6 @@ const handler = async (event, context) => {
       }
     }
 
-    // Return 404 Not Found for other routes
     return {
       statusCode: 404,
       body: JSON.stringify({ message: "Not Found" }),
@@ -50,7 +53,7 @@ async function uploadResumeToS3(body) {
 
     const params = {
       Bucket: S3_BUCKET_NAME,
-      Key: `resumes/${uuidv4()}.pdf`, // Generate a unique key for each resume
+      Key: `resumes/${uuidv4()}.pdf`,
       Body: fileContent,
     };
 

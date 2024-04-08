@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Button, Grid, TextField, Typography } from "@material-ui/core";
 import { invokeLambdaFunction } from "./invokeLambda";
 
+const API = "https://qcnyej6i4g.execute-api.us-east-1.amazonaws.com/prod";
+
 function Home() {
   const [resume, setResume] = useState(null);
   const [formData, setFormData] = useState({
@@ -29,20 +31,28 @@ function Home() {
 
       try {
         console.log("Inside Try");
-        const uploadResponse = await invokeLambdaFunction({
-          path: "/upload",
+        const uploadResponse = await fetch(`${API}/upload`, {
+          method: "POST",
           body: formData,
         });
+        // const uploadResponse = await invokeLambdaFunction({
+        //   path: "/upload",
+        //   body: formData,
+        // });
         console.log("Resume uploaded to S3:", uploadResponse.data);
 
         const body = {
           Key: uploadResponse.data.result.key,
           email: email,
         };
-        const extractResponse = await invokeLambdaFunction({
-          path: "/extract",
+        const extractResponse = await fetch(`${API}/extract`, {
+          method: "POST",
           body,
         });
+        // const extractResponse = await invokeLambdaFunction({
+        //   path: "/extract",
+        //   body,
+        // });
         console.log("Extracted resume details:", extractResponse);
 
         setFormData({
