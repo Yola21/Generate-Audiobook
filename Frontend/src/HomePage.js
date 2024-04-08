@@ -61,6 +61,23 @@ function Home() {
       <Typography variant="h4">Job Portal</Typography>
       <Grid item xs={12}>
         <TextField
+          label="Email"
+          variant="outlined"
+          fullWidth
+          value={email}
+          onChange={handleEmailChange}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <input type="file" accept=".pdf" onChange={handleResumeChange} />
+      </Grid>
+      <Grid item xs={12}>
+        <Button variant="contained" color="primary" onClick={handleExtract}>
+          Upload Resume
+        </Button>
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
           label="Name"
           variant="outlined"
           fullWidth
@@ -86,23 +103,6 @@ function Home() {
           value={formData.experience}
           InputProps={{ readOnly: true }}
         />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          value={email}
-          onChange={handleEmailChange}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <input type="file" accept=".pdf" onChange={handleResumeChange} />
-      </Grid>
-      <Grid item xs={12}>
-        <Button variant="contained" color="primary" onClick={handleExtract}>
-          Upload Resume
-        </Button>
       </Grid>
     </Grid>
   );
