@@ -14,9 +14,11 @@ function App() {
   useEffect(() => {
     AWS.config.update({
       region: AWS_REGION,
-      accessKeyId: AWS_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SECRET_ACCESS_KEY,
-      sessionToken: AWS_SESSION_TOKEN,
+      credentials: {
+        accessKeyId: AWS_ACCESS_KEY_ID,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        sessionToken: AWS_SESSION_TOKEN,
+      },
     });
   }, []);
 
