@@ -5,7 +5,7 @@ const LAMBDA_FUNCTION_NAME = "test-22-LambdaFunction-bVX3AHTIcJjU";
 
 export const invokeLambdaFunction = async (path, body) => {
   const params = {
-    FunctionName: LAMBDA_FUNCTION_NAME, // Replace with your Lambda function name
+    FunctionName: LAMBDA_FUNCTION_NAME,
     InvocationType: "RequestResponse",
     Payload: JSON.stringify({
       path,

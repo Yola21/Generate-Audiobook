@@ -24,7 +24,7 @@ function Home() {
     if (resume && email) {
       const formData = new FormData();
       formData.append("resume", resume);
-      formData.append("email", email); // Pass email along with resume
+      formData.append("email", email);
 
       try {
         const uploadResponse = await invokeLambdaFunction({
@@ -35,7 +35,7 @@ function Home() {
 
         const body = {
           Key: uploadResponse.data.result.key,
-          email: email, // Pass email to extract endpoint
+          email: email,
         };
         const extractResponse = await invokeLambdaFunction({
           path: "/extract",
