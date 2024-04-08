@@ -25,8 +25,10 @@ function Home() {
       const formData = new FormData();
       formData.append("resume", resume);
       formData.append("email", email);
+      console.log({ formData });
 
       try {
+        console.log("Inside Try");
         const uploadResponse = await invokeLambdaFunction({
           path: "/upload",
           body: formData,
