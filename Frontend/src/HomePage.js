@@ -25,9 +25,10 @@ function Home() {
   const handleExtract = async () => {
     if (resume && email) {
       const uploadData = new FormData();
+      // const reader = new FileReader()
       uploadData.append("resume", resume);
-      uploadData.append("email", email);
-      console.log({ uploadData });
+      // uploadData.append("email", email);
+      console.log({ uploadData }, uploadData.get("resume"));
 
       try {
         console.log("Inside Try");

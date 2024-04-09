@@ -45,17 +45,20 @@ const handler = async (event, context) => {
 };
 
 async function uploadResumeToS3(body) {
+  console.log({ body }, body.get("resume"));
   try {
     const fileContent = Buffer.from(body, "base64");
+    console.log({ fileContent });
 
     const params = {
       Bucket: S3_BUCKET_NAME,
       Key: `resumes/${uuidv4()}.pdf`, // Generate a unique key for each resume
       Body: fileContent,
     };
+    console.log({ params });
 
     const result = await s3.upload(params).promise();
-    console.log("File uploaded to S3:", result.Location);
+    console.log("File uploaded to S3:", result);
 
     return {
       statusCode: 200,
