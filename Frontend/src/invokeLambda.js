@@ -45,6 +45,8 @@ export const uploadFiletoS3 = async (body) => {
 
         const response = await invokeLambdaFunction({ result, email });
         console.log({ response });
+        const parsed = JSON.parse(response);
+        console.log(parsed);
 
         resolve({
           statusCode: 200,
