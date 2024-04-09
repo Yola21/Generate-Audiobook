@@ -18,6 +18,7 @@ const lambda = new AWS.Lambda();
 const LAMBDA_FUNCTION_NAME = "test-22-LambdaFunction-td838Vr42YoR";
 
 export const invokeLambdaFunction = async (path, body) => {
+  console.log({ path }, { body }, path === "/upload");
   const params = {
     FunctionName: LAMBDA_FUNCTION_NAME,
     InvocationType: "RequestResponse",
