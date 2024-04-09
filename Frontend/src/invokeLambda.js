@@ -31,7 +31,8 @@ export const invokeLambdaFunction = async ({ path, body }) => {
     Payload: JSON.stringify({
       path,
       httpMethod: "POST",
-      body: path === "/upload" ? resumeFile : JSON.stringify(body),
+      body: resumeFile,
+      // body: path === "/upload" ? resumeFile : JSON.stringify(body),
     }),
   };
 

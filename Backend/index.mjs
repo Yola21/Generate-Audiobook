@@ -45,11 +45,12 @@ const handler = async (event, context) => {
 };
 
 async function uploadResumeToS3(body) {
-  console.log({ body });
+  console.log("upload", { body });
   try {
     const formData = JSON.parse(body);
     console.log({ formData });
-    const resume = formData.get("resume");
+    const resume = formData.resume;
+    // const resume = formData.get("resume");
     console.log({ resume });
     const fileContent = Buffer.from(resume, "base64");
     console.log({ fileContent });
