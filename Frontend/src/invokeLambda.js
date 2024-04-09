@@ -89,7 +89,7 @@ const invokeLambdaFunction = async (response) => {
   const { result, email } = response;
 
   const body = {
-    Key: result.data.result.key,
+    Key: result.key,
     email: email,
   };
 
