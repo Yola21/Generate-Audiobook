@@ -159,6 +159,66 @@ Resources:
       DisplayName: ResumeParserSNS
       TopicName: ResumeParserSNS
 
+  # API Gateway for handling upload endpoint
+  UploadAPIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ResumeParserAPI
+      Description: API Gateway for Resume Parser
+
+  UploadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt UploadAPIGateway.RootResourceId
+      PathPart: "upload"
+      RestApiId: !Ref UploadAPIGateway
+
+  UploadMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UploadAPIGateway
+      ResourceId: !Ref UploadResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            "application/json": "Empty"
+        - StatusCode: 500
+          ResponseModels:
+            "application/json": "Empty"
+
+  UploadOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UploadAPIGateway
+      ResourceId: !Ref UploadResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+        PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: "{\"statusCode\":200}"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            "application/json": "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
 Outputs:
   SNSArn:
     Value: !Ref SNSTopic
