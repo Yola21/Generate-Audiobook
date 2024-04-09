@@ -15,7 +15,7 @@ AWS.config.update({
 
 const lambda = new AWS.Lambda();
 
-const LAMBDA_FUNCTION_NAME = "test-22-LambdaFunction-bVX3AHTIcJjU";
+const LAMBDA_FUNCTION_NAME = "test-22-LambdaFunction-td838Vr42YoR";
 
 export const invokeLambdaFunction = async (path, body) => {
   const params = {
