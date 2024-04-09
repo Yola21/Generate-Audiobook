@@ -78,15 +78,19 @@ async function uploadResumeToS3(body) {
 }
 
 async function extractTextFromResume(body) {
+  console.log({ body });
   try {
-    const { Key, email } = body;
+    const { Key, email } = JSON.parse(body);
     const params = {
       Bucket: S3_BUCKET_NAME,
       Key: Key,
     };
+    console.log({ params });
 
     const data = await s3.getObject(params).promise();
+    console.log({ data });
     const fileContent = data.Body;
+    console.log({ fileContent });
 
     const textractParams = {
       Document: {
@@ -94,10 +98,13 @@ async function extractTextFromResume(body) {
       },
       FeatureTypes: ["LAYOUT"],
     };
+    console.log({ textractParams });
 
     const response = await textract.analyzeDocument(textractParams).promise();
+    console.log({ response });
 
     const extractedData = extractInformationFromTextractResponse(response);
+    console.log({ extractedData });
 
     await publishToSnsTopic(extractedData, email);
 

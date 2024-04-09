@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Grid, TextField, Typography } from "@material-ui/core";
-import { invokeLambdaFunction } from "./invokeLambda";
+import { invokeLambdaFunction, uploadFiletoS3 } from "./invokeLambda";
 
 // const API = "https://w3n7fhcu6c.execute-api.us-east-1.amazonaws.com/prod";
 
@@ -39,30 +39,40 @@ function Home() {
         //   },
         //   body: formData,
         // });
-        const uploadResponse = await invokeLambdaFunction({
-          path: "/upload",
-          body: resume,
-        });
-        console.log("Resume uploaded to S3:", uploadResponse.data);
-
         const body = {
-          Key: uploadResponse.data.result.key,
+          file: resume,
           email: email,
         };
+        const uploadResponse = await uploadFiletoS3(body);
+        // const uploadResponse = await invokeLambdaFunction({
+        //   path: "/upload",
+        //   body: resume,
+        // });
+        console.log("Resume uploaded to S3:", uploadResponse);
+
+        // const body = {
+        //   Key: uploadResponse.data.result.key,
+        //   email: email,
+        // };
         // const extractResponse = await fetch(`${API}/extract`, {
         //   method: "POST",
         //   body,
         // });
-        const extractResponse = await invokeLambdaFunction({
-          path: "/extract",
-          body,
-        });
-        console.log("Extracted resume details:", extractResponse);
+        // const extractResponse = await invokeLambdaFunction({
+        //   path: "/extract",
+        //   body,
+        // });
+        // console.log("Extracted resume details:", extractResponse);
 
+        // setFormData({
+        //   name: extractResponse.data.extractedData.name || "",
+        //   education: extractResponse.data.extractedData.education || "",
+        //   experience: extractResponse.data.extractedData.experience || "",
+        // });
         setFormData({
-          name: extractResponse.data.extractedData.name || "",
-          education: extractResponse.data.extractedData.education || "",
-          experience: extractResponse.data.extractedData.experience || "",
+          name: uploadResponse.data.extractedData.name || "",
+          education: uploadResponse.data.extractedData.education || "",
+          experience: uploadResponse.data.extractedData.experience || "",
         });
       } catch (error) {
         console.error("Error extracting data from resume:", error);
