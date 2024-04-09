@@ -125,7 +125,7 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.medium
+      InstanceType: t3.medium
       KeyName: !Ref KeyPairName
       ImageId: ami-080e1f13689e07408
       SubnetId: !Ref PublicSubnet1
@@ -159,7 +159,6 @@ Resources:
       DisplayName: ResumeParserSNS
       TopicName: ResumeParserSNS
 
-  # API Gateway for handling upload endpoint
   UploadAPIGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -218,6 +217,15 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
+
+  UploadDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref UploadAPIGateway
+      StageName: prod
+    DependsOn:
+      - UploadMethod
+      - UploadOptionsMethod
 
 Outputs:
   SNSArn:
