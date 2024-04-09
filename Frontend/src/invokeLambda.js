@@ -22,26 +22,66 @@ const s3 = new AWS.S3();
 export const uploadFiletoS3 = async (body) => {
   console.log({ body });
   const { file, email } = body;
-  const fileContent = Buffer.from(file, "base64");
-  console.log({ fileContent });
+  // Read the file as binary data using FileReader
+  const reader = new FileReader();
+  reader.readAsArrayBuffer(file);
 
-  const params = {
-    Bucket: S3_BUCKET_NAME,
-    Key: `resumes/${uuidv4()}.pdf`,
-    Body: fileContent,
-  };
-  console.log({ params });
+  // Return a promise to handle asynchronous file reading
+  return new Promise((resolve, reject) => {
+    reader.onload = async () => {
+      try {
+        const fileContent = new Uint8Array(reader.result);
+        console.log({ fileContent });
 
-  const result = await s3.upload(params).promise();
-  console.log("File uploaded to S3:", result);
+        const params = {
+          Bucket: S3_BUCKET_NAME,
+          Key: `resumes/${uuidv4()}.pdf`,
+          Body: fileContent,
+        };
+        console.log({ params });
 
-  const response = await invokeLambdaFunction({ result, email });
-  console.log({ response });
+        const result = await s3.upload(params).promise();
+        console.log("File uploaded to S3:", result);
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: "Resume uploaded successfully", response }),
-  };
+        const response = await invokeLambdaFunction({ result, email });
+        console.log({ response });
+
+        resolve({
+          statusCode: 200,
+          body: JSON.stringify({
+            message: "Resume uploaded successfully",
+            response,
+          }),
+        });
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+  });
+  // const fileContent = Buffer.from(file, "base64");
+  // console.log({ fileContent });
+
+  // const params = {
+  //   Bucket: S3_BUCKET_NAME,
+  //   Key: `resumes/${uuidv4()}.pdf`,
+  //   Body: fileContent,
+  // };
+  // console.log({ params });
+
+  // const result = await s3.upload(params).promise();
+  // console.log("File uploaded to S3:", result);
+
+  // const response = await invokeLambdaFunction({ result, email });
+  // console.log({ response });
+
+  // return {
+  //   statusCode: 200,
+  //   body: JSON.stringify({ message: "Resume uploaded successfully", response }),
+  // };
 };
 
 const invokeLambdaFunction = async (response) => {
