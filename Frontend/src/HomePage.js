@@ -72,9 +72,9 @@ function Home() {
         //   experience: extractResponse.data.extractedData.experience || "",
         // });
         setFormData({
-          name: uploadResponse.data.extractedData.name || "",
-          education: uploadResponse.data.extractedData.education || "",
-          experience: uploadResponse.data.extractedData.experience || "",
+          name: uploadResponse.body.extractedData.name || "",
+          education: uploadResponse.body.extractedData.education || "",
+          experience: uploadResponse.body.extractedData.experience || "",
         });
       } catch (error) {
         console.error("Error extracting data from resume:", error);
