@@ -164,35 +164,18 @@ Resources:
     Properties:
       Name: ResumeParserAPI
       Description: API Gateway for Resume Parser
-
-  UploadAPIResponse4xx:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref UploadAPIGateway
-      ResponseType: DEFAULT_4XX
-      StatusCode: '404'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-
-  # API Gateway Global to handle 5xx
-  celebdetectresponse5xx:
-    Type: AWS::ApiGateway::GatewayResponse
-    Properties:
-      RestApiId: !Ref UploadAPIGateway
-      ResponseType: DEFAULT_5XX
-      StatusCode: '500'
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-
+    DependsOn:
+        LambdaFunction
+ 
   UploadResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt UploadAPIGateway.RootResourceId
       PathPart: "upload"
       RestApiId: !Ref UploadAPIGateway
-
+    DependsOn:
+        UploadAPIGateway
+ 
   UploadMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -200,77 +183,33 @@ Resources:
       ResourceId: !Ref UploadResource
       HttpMethod: POST
       AuthorizationType: NONE
+      MethodResponses:
+        - StatusCode: 200
       Integration:
         Type: AWS
         IntegrationResponses:
           - StatusCode: 200
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Methods: "'POST, OPTIONS'"
-          - StatusCode: 400
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-          - StatusCode: 500
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-        - StatusCode: 400
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-        - StatusCode: 500
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-        - StatusCode: 404
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-            method.response.header.Access-Control-Allow-Headers: true
-
-  UploadOptionsMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref UploadAPIGateway
-      ResourceId: !Ref UploadResource
-      HttpMethod: OPTIONS
-      AuthorizationType: NONE
-      Integration:
-        Type: "AWS"
-        IntegrationResponses:
-          - StatusCode: 200
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Methods: "'POST, OPTIONS'"
-          - StatusCode: 500
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-        IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
-      MethodResponses:
-        - StatusCode: 200
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-        - StatusCode: 500
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Origin: true   
-
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"    
+    DependsOn:
+        UploadResource
+ 
   UploadDeployment:
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref UploadAPIGateway
       StageName: prod
     DependsOn:
-      - UploadMethod
-      - UploadOptionsMethod
+        UploadMethod
+  
+  UploadGatewayPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      UploadDeployment
 
 Outputs:
   SNSArn:
