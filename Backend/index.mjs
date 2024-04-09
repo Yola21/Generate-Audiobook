@@ -20,6 +20,10 @@ const s3 = new AWS.S3();
 const textract = new AWS.Textract();
 const sns = new AWS.SNS();
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const handler = async (event, context) => {
   console.log("Invoking Lambda", event);
   try {
@@ -39,6 +43,7 @@ const handler = async (event, context) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         message: "Resume uploaded successfully",
         extractedData,
