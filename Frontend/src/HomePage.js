@@ -34,8 +34,8 @@ function Home() {
         const uploadResponse = await fetch(`${API}/upload`, {
           method: "POST",
           headers: {
+            "Content-Type": "multipart/form-data",
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Credentials": true,
           },
           body: formData,
         });
