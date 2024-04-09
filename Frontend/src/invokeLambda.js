@@ -18,14 +18,14 @@ const lambda = new AWS.Lambda();
 const LAMBDA_FUNCTION_NAME = "test-22-LambdaFunction-td838Vr42YoR";
 
 export const invokeLambdaFunction = async ({ path, body }) => {
-  console.log({ path }, { body }, path === "/upload");
+  console.log({ path }, { body }, body.get("resume"), path === "/upload");
   const params = {
     FunctionName: LAMBDA_FUNCTION_NAME,
     InvocationType: "RequestResponse",
     Payload: JSON.stringify({
       path,
       httpMethod: "POST",
-      body: path === "/upload" ? body : JSON.stringify(body),
+      body: path === "/upload" ? body.get("resume") : JSON.stringify(body),
     }),
   };
 
