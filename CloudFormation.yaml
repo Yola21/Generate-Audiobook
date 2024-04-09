@@ -139,6 +139,20 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: resume-parser-s3
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+            AllowedHeaders:
+              - "*"
+            ExposedHeaders:
+              - "Authorization"
+            MaxAge: 3000
 
   LambdaFunction:
     Type: AWS::Lambda::Function

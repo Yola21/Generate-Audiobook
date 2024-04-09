@@ -28,10 +28,11 @@ const handler = async (event, context) => {
         return uploadResumeToS3(event.body);
       } else if (path === "/extract") {
         return extractTextFromResume(event.body);
+      } else if (path === "/apply") {
+        return applyForJob(event.body);
       }
     }
 
-    // Return 404 Not Found for other routes
     return {
       statusCode: 404,
       body: JSON.stringify({ message: "Not Found" }),
@@ -50,14 +51,13 @@ async function uploadResumeToS3(body) {
     const formData = JSON.parse(body);
     console.log({ formData });
     const resume = formData.resume;
-    // const resume = formData.get("resume");
     console.log({ resume });
     const fileContent = Buffer.from(resume, "base64");
     console.log({ fileContent });
 
     const params = {
       Bucket: S3_BUCKET_NAME,
-      Key: `resumes/${uuidv4()}.pdf`, // Generate a unique key for each resume
+      Key: `resumes/${uuidv4()}.pdf`,
       Body: fileContent,
     };
     console.log({ params });
@@ -81,7 +81,6 @@ async function extractTextFromResume(body) {
   console.log({ body });
   try {
     const { Key, email } = body;
-    // const { Key, email } = JSON.parse(body);
     const params = {
       Bucket: S3_BUCKET_NAME,
       Key,
@@ -123,24 +122,60 @@ async function extractTextFromResume(body) {
 
 function extractInformationFromTextractResponse(response) {
   let name = "";
+  let email = "";
+  let githubLink = "";
+  let linkedinLink = "";
+  let phone = "";
   let education = "";
+  let skills = "";
   let experience = "";
 
   response.Blocks.forEach((block) => {
     if (block.BlockType === "LINE") {
+      const text = block.Text.toLowerCase();
+
       if (!name) {
         name = block.Text;
       }
-      if (block.Text.toLowerCase().includes("education")) {
-        education = block.Text;
+
+      if (text.includes("@") && text.includes(".")) {
+        email = text;
       }
-      if (block.Text.toLowerCase().includes("experience")) {
-        experience = block.Text;
+
+      if (text.includes("github.com")) {
+        githubLink = text;
+      }
+
+      if (text.includes("linkedin.com")) {
+        linkedinLink = text;
+      }
+
+      if (text.match(/\d{10}/)) {
+        phone = text;
+      }
+
+      if (text.includes("education")) {
+        education += text + "\n";
+      }
+      if (text.includes("skills")) {
+        skills += text + "\n";
+      }
+      if (text.includes("experience")) {
+        experience += text + "\n";
       }
     }
   });
 
-  return { name, education, experience };
+  return {
+    name,
+    email,
+    githubLink,
+    linkedinLink,
+    phone,
+    education,
+    skills,
+    experience,
+  };
 }
 
 async function publishToSnsTopic(extractedData, email) {
@@ -170,6 +205,48 @@ async function getSnsTopicArn(topicName) {
   } catch (error) {
     throw new Error("Error fetching SNS topics: " + error.message);
   }
+}
+
+async function applyForJob(body) {
+  try {
+    const { email } = body;
+    // const { email } = JSON.parse(body);
+    const applicantID = generateApplicantID();
+    await sendApplicationEmail(email, applicantID);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Application submitted successfully" }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error applying for job" }),
+    };
+  }
+}
+
+async function sendApplicationEmail(email, applicantID) {
+  const params = {
+    Destination: {
+      ToAddresses: [email],
+    },
+    Message: {
+      Body: {
+        Text: {
+          Data: `Your Applicant ID: ${applicantID}\nThanks for applying at our company. You will be contacted if you are shortlisted.`,
+        },
+      },
+      Subject: { Data: "Job Application Confirmation" },
+    },
+    Source: "yashkhorja4@gmail.com", // Sender email address (must be verified in SES)
+  };
+
+  await ses.sendEmail(params).promise();
+}
+
+function generateApplicantID() {
+  return Math.floor(100000 + Math.random() * 900000);
 }
 
 export { handler };

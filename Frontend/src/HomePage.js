@@ -1,17 +1,28 @@
 import React, { useState } from "react";
-import { Button, Grid, TextField, Typography } from "@material-ui/core";
-import { invokeLambdaFunction, uploadFiletoS3 } from "./invokeLambda";
-
-// const API = "https://w3n7fhcu6c.execute-api.us-east-1.amazonaws.com/prod";
+import {
+  Button,
+  Grid,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@material-ui/core";
+import { toast } from "react-toastify";
+import { uploadFiletoS3 } from "./invokeLambda";
 
 function Home() {
   const [resume, setResume] = useState(null);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
+    github: "",
+    linkedin: "",
+    phone: "",
     education: "",
+    skills: "",
     experience: "",
   });
-  const [email, setEmail] = useState("");
 
   const handleResumeChange = (e) => {
     const file = e.target.files[0];
@@ -24,70 +35,56 @@ function Home() {
 
   const handleExtract = async () => {
     if (resume && email) {
-      // const uploadData = new FormData();
-      // const reader = new FileReader()
-      // uploadData.append("resume", resume);
-      // uploadData.append("email", email);
-      // console.log({ uploadData }, uploadData.get("resume"));
-
+      setLoading(true);
       try {
-        console.log("Inside Try");
-        // const uploadResponse = await fetch(`${API}/upload`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "multipart/form-data",
-        //   },
-        //   body: formData,
-        // });
         const body = {
           file: resume,
           email: email,
         };
         const uploadResponse = await uploadFiletoS3(body);
-        // const uploadResponse = await invokeLambdaFunction({
-        //   path: "/upload",
-        //   body: resume,
-        // });
-        console.log("Resume uploaded to S3:", uploadResponse);
-        // const parsedData = JSON.parse(uploadResponse);
-        // console.log(parsedData);
-
-        // const body = {
-        //   Key: uploadResponse.data.result.key,
-        //   email: email,
-        // };
-        // const extractResponse = await fetch(`${API}/extract`, {
-        //   method: "POST",
-        //   body,
-        // });
-        // const extractResponse = await invokeLambdaFunction({
-        //   path: "/extract",
-        //   body,
-        // });
-        // console.log("Extracted resume details:", extractResponse);
-
-        // setFormData({
-        //   name: extractResponse.data.extractedData.name || "",
-        //   education: extractResponse.data.extractedData.education || "",
-        //   experience: extractResponse.data.extractedData.experience || "",
-        // });
         setFormData({
           name: uploadResponse.body.extractedData.name || "",
+          email: uploadResponse.body.extractedData.email || "",
+          github: uploadResponse.body.extractedData.githubLink || "",
+          linkedin: uploadResponse.body.extractedData.linkedinLink || "",
+          phone: uploadResponse.body.extractedData.phone || "",
           education: uploadResponse.body.extractedData.education || "",
+          skills: uploadResponse.body.extractedData.skills || "",
           experience: uploadResponse.body.extractedData.experience || "",
         });
+        toast.success("Text extracted successfully from Resume!");
       } catch (error) {
         console.error("Error extracting data from resume:", error);
+      } finally {
+        setLoading(false);
       }
     } else {
       console.error("Please select a resume and provide an email address.");
     }
   };
 
+  const handleFormDataChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const applyForJob = async () => {
+    try {
+      await applyForJob({ email });
+      toast.success("Application submitted successfully!");
+    } catch (error) {
+      console.error("Error applying for job:", error);
+      toast.error("Failed to submit application. Please try again later.");
+    }
+  };
+
   return (
     <Grid container spacing={2} style={{ padding: "2rem" }}>
       <Typography variant="h4">Job Portal</Typography>
-      <Grid item xs={12}>
+      <Grid item xs={6}>
         <TextField
           label="Email"
           variant="outlined"
@@ -96,7 +93,7 @@ function Home() {
           onChange={handleEmailChange}
         />
       </Grid>
-      <Grid item xs={12}>
+      <Grid item xs={6}>
         <input type="file" accept=".pdf" onChange={handleResumeChange} />
       </Grid>
       <Grid item xs={12}>
@@ -104,34 +101,36 @@ function Home() {
           Upload Resume
         </Button>
       </Grid>
-      <Grid item xs={12}>
-        <TextField
-          label="Name"
-          variant="outlined"
-          fullWidth
-          value={formData.name}
-          InputProps={{ readOnly: true }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          label="Education"
-          variant="outlined"
-          fullWidth
-          value={formData.education}
-          InputProps={{ readOnly: true }}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          label="Experience"
-          variant="outlined"
-          multiline
-          fullWidth
-          value={formData.experience}
-          InputProps={{ readOnly: true }}
-        />
-      </Grid>
+      {loading && (
+        <Grid item xs={12}>
+          <CircularProgress />
+        </Grid>
+      )}
+      {!loading && (
+        <>
+          {Object.entries(formData).map(([key, value]) => (
+            <Grid item xs={6} key={key}>
+              <TextField
+                label={key.charAt(0).toUpperCase() + key.slice(1)}
+                variant="outlined"
+                fullWidth
+                name={key}
+                value={value}
+                onChange={handleFormDataChange}
+              />
+            </Grid>
+          ))}
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={applyForJob}
+              disabled={!email}>
+              Apply for Job
+            </Button>
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 }
