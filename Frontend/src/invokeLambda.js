@@ -19,7 +19,7 @@ const LAMBDA_FUNCTION_NAME = "test-22-LambdaFunction-td838Vr42YoR";
 
 export const invokeLambdaFunction = async ({ path, body }) => {
   console.log({ path }, { body }, path === "/upload");
-  const resumeFile = FormData();
+  const resumeFile = new FormData();
   if (path === "/upload") {
     resumeFile.append("resume", body);
   }
