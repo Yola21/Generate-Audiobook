@@ -3,39 +3,46 @@ import { v4 as uuidv4 } from "uuid";
 
 const S3_BUCKET_NAME = "resume-parser-s3";
 const SNS_TOPIC_NAME = "ResumeParserSNS";
-const AWS_REGION = "us-east-1";
-const AWS_ACCESS_KEY_ID = "ASIATCKANRQAOQDP32FS";
-const AWS_SECRET_ACCESS_KEY = "Hs6aLu+ThZJ1Xj5Pq7ylmHkD+4wOowfKkWN05OcP";
-const AWS_SESSION_TOKEN =
-  "IQoJb3JpZ2luX2VjEM7//////////wEaCXVzLXdlc3QtMiJHMEUCIQDwX5AIEJEL7valrASSr5GaiaQoGY/H2wLt4s46tlqjJQIgXZpImR1rPYyd77LlG6UeXgvZ8t8KIMbRH9XzqC297hkqsgII9///////////ARAAGgwyMTExMjUzNzM5NTIiDGTx89B4/3wRXrQy1CqGAujp4IWuWT8J6flMsreg6MCZ0zJDU+eZPTH+BL0zJaq/GDVRzZgyybTOk4OyHgkoTEx4C8lj7bbSC+Y8IWb0E6Sm5QejojI3iaTtrXwwox0YmoH6OPrEi1WZGC1cV3SyDz6qoGIMwT6BByzi+l21xQ/BzRkxWzYG3PumgSYi4xxqJuDcdnFCIO8lWgMGQmyb5V1v62heig0t9uwb6dYgK8u5hAPRHT50m6qlrw76A623KBWh134tlTDmZj7EnESIT+qKgeT9hZhdQuvrSL2gJF7ccFaHDXD9kOAWAy5kzwX1dy9xVEmbKgtxNSR0bOOkD/lXvCMz6+z8Ugz6gYBjqCLS12QvPxowqsvRsAY6nQGFcsLqSaeH2oooEM10RJuTg/ToT0PBIR8Lea4fmSzCeq5XPONBfVmVJIqcUP/cZBPa6yrbxyGB/8z/Qp1J32y1jgN5sn6OT1NlcuikECL5YHm4AgHonpsxCS8OS/JvbMRxksie3Av8tV7g6MWyihWvoR9Ka5X2Dd89xSd6k8PXTwJ51+blRRx9oaIi2Uazbj9b/912f3kqaLCDjfqo";
+// const AWS_REGION = "us-east-1";
+// const AWS_ACCESS_KEY_ID = "ASIATCKANRQAOQDP32FS";
+// const AWS_SECRET_ACCESS_KEY = "Hs6aLu+ThZJ1Xj5Pq7ylmHkD+4wOowfKkWN05OcP";
+// const AWS_SESSION_TOKEN =
+//   "IQoJb3JpZ2luX2VjEM7//////////wEaCXVzLXdlc3QtMiJHMEUCIQDwX5AIEJEL7valrASSr5GaiaQoGY/H2wLt4s46tlqjJQIgXZpImR1rPYyd77LlG6UeXgvZ8t8KIMbRH9XzqC297hkqsgII9///////////ARAAGgwyMTExMjUzNzM5NTIiDGTx89B4/3wRXrQy1CqGAujp4IWuWT8J6flMsreg6MCZ0zJDU+eZPTH+BL0zJaq/GDVRzZgyybTOk4OyHgkoTEx4C8lj7bbSC+Y8IWb0E6Sm5QejojI3iaTtrXwwox0YmoH6OPrEi1WZGC1cV3SyDz6qoGIMwT6BByzi+l21xQ/BzRkxWzYG3PumgSYi4xxqJuDcdnFCIO8lWgMGQmyb5V1v62heig0t9uwb6dYgK8u5hAPRHT50m6qlrw76A623KBWh134tlTDmZj7EnESIT+qKgeT9hZhdQuvrSL2gJF7ccFaHDXD9kOAWAy5kzwX1dy9xVEmbKgtxNSR0bOOkD/lXvCMz6+z8Ugz6gYBjqCLS12QvPxowqsvRsAY6nQGFcsLqSaeH2oooEM10RJuTg/ToT0PBIR8Lea4fmSzCeq5XPONBfVmVJIqcUP/cZBPa6yrbxyGB/8z/Qp1J32y1jgN5sn6OT1NlcuikECL5YHm4AgHonpsxCS8OS/JvbMRxksie3Av8tV7g6MWyihWvoR9Ka5X2Dd89xSd6k8PXTwJ51+blRRx9oaIi2Uazbj9b/912f3kqaLCDjfqoG";
 
-AWS.config.update({
-  region: AWS_REGION,
-  accessKeyId: AWS_ACCESS_KEY_ID,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  sessionToken: AWS_SESSION_TOKEN,
-});
+// AWS.config.update({
+//   region: AWS_REGION,
+//   accessKeyId: AWS_ACCESS_KEY_ID,
+//   secretAccessKey: AWS_SECRET_ACCESS_KEY,
+//   sessionToken: AWS_SESSION_TOKEN,
+// });
 
 const s3 = new AWS.S3();
 const textract = new AWS.Textract();
 const sns = new AWS.SNS();
 
 const handler = async (event, context) => {
+  console.log("Invoking Lambda", event);
   try {
-    const path = event.path;
-    const method = event.httpMethod;
+    const { resume, email } = JSON.parse(event.body);
+    const fileContent = Buffer.from(resume, "base64");
 
-    if (method === "POST") {
-      if (path === "/upload") {
-        return uploadResumeToS3(event.body);
-      } else if (path === "/extract") {
-        return extractTextFromResume(event.body);
-      }
-    }
+    const params = {
+      Bucket: S3_BUCKET_NAME,
+      Key: `resumes/${uuidv4()}.pdf`,
+      Body: fileContent,
+    };
+
+    const result = await s3.upload(params).promise();
+    console.log("File uploaded to S3:", result, result.Location);
+
+    const extractedData = await extractTextFromResume(result.Key, email);
 
     return {
-      statusCode: 404,
-      body: JSON.stringify({ message: "Not Found" }),
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "Resume uploaded successfully",
+        extractedData,
+      }),
     };
   } catch (error) {
     return {
@@ -45,34 +52,8 @@ const handler = async (event, context) => {
   }
 };
 
-async function uploadResumeToS3(body) {
+async function extractTextFromResume(Key, email) {
   try {
-    const fileContent = Buffer.from(body, "base64");
-
-    const params = {
-      Bucket: S3_BUCKET_NAME,
-      Key: `resumes/${uuidv4()}.pdf`,
-      Body: fileContent,
-    };
-
-    const result = await s3.upload(params).promise();
-    console.log("File uploaded to S3:", result.Location);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Resume uploaded successfully", result }),
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error uploading file" }),
-    };
-  }
-}
-
-async function extractTextFromResume(body) {
-  try {
-    const { Key, email } = body;
     const params = {
       Bucket: S3_BUCKET_NAME,
       Key: Key,
@@ -94,15 +75,9 @@ async function extractTextFromResume(body) {
 
     await publishToSnsTopic(extractedData, email);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ extractedData, response }),
-    };
+    return extractedData;
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error extracting text from resume" }),
-    };
+    throw new Error("Error extracting text from resume: " + error.message);
   }
 }
 
