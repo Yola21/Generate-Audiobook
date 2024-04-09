@@ -7,7 +7,7 @@ import {
   CircularProgress,
 } from "@material-ui/core";
 import { toast } from "react-toastify";
-import { uploadFiletoS3 } from "./invokeLambda";
+import { applyForJob, uploadFiletoS3 } from "./invokeLambda";
 
 function Home() {
   const [resume, setResume] = useState(null);
@@ -71,7 +71,7 @@ function Home() {
     });
   };
 
-  const applyForJob = async () => {
+  const handleApplyForJob = async () => {
     try {
       await applyForJob({ email });
       toast.success("Application submitted successfully!");
@@ -124,7 +124,7 @@ function Home() {
             <Button
               variant="contained"
               color="primary"
-              onClick={applyForJob}
+              onClick={handleApplyForJob}
               disabled={!email}>
               Apply for Job
             </Button>
