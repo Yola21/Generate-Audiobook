@@ -24,11 +24,11 @@ function Home() {
 
   const handleExtract = async () => {
     if (resume && email) {
-      const uploadData = new FormData();
+      // const uploadData = new FormData();
       // const reader = new FileReader()
-      uploadData.append("resume", resume);
+      // uploadData.append("resume", resume);
       // uploadData.append("email", email);
-      console.log({ uploadData }, uploadData.get("resume"));
+      // console.log({ uploadData }, uploadData.get("resume"));
 
       try {
         console.log("Inside Try");
@@ -41,7 +41,7 @@ function Home() {
         // });
         const uploadResponse = await invokeLambdaFunction({
           path: "/upload",
-          body: uploadData,
+          body: resume,
         });
         console.log("Resume uploaded to S3:", uploadResponse.data);
 

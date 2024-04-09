@@ -47,7 +47,11 @@ const handler = async (event, context) => {
 async function uploadResumeToS3(body) {
   console.log({ body });
   try {
-    const fileContent = Buffer.from(body, "base64");
+    const formData = JSON.parse(body);
+    console.log({ formData });
+    const resume = formData.get("resume");
+    console.log({ resume });
+    const fileContent = Buffer.from(resume, "base64");
     console.log({ fileContent });
 
     const params = {
