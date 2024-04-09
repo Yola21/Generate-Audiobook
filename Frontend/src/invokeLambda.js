@@ -45,15 +45,15 @@ export const uploadFiletoS3 = async (body) => {
 
         const response = await invokeLambdaFunction({ result, email });
         console.log({ response });
-        const parsed = JSON.parse(response);
-        console.log(parsed);
+        const parsePayload = JSON.parse(response?.Payload);
+        console.log(parsePayload);
+
+        const parsePayloadBody = JSON.parse(parsePayload?.body);
+        console.log(parsePayloadBody);
 
         resolve({
           statusCode: 200,
-          body: JSON.stringify({
-            message: "Resume uploaded successfully",
-            response,
-          }),
+          body: parsePayloadBody,
         });
       } catch (error) {
         reject(error);
