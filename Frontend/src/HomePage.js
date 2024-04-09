@@ -33,6 +33,10 @@ function Home() {
         console.log("Inside Try");
         const uploadResponse = await fetch(`${API}/upload`, {
           method: "POST",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": true,
+          },
           body: formData,
         });
         // const uploadResponse = await invokeLambdaFunction({
