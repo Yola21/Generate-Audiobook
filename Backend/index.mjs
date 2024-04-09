@@ -106,7 +106,7 @@ async function extractTextFromResume(body) {
     const extractedData = extractInformationFromTextractResponse(response);
     console.log({ extractedData });
 
-    await publishToSnsTopic(extractedData, email);
+    // await publishToSnsTopic(extractedData, email);
 
     return {
       statusCode: 200,
@@ -178,12 +178,12 @@ function extractInformationFromTextractResponse(response) {
   };
 }
 
-async function publishToSnsTopic(extractedData, email) {
+async function publishToSnsTopic(email, applicantID) {
   try {
     const snsParams = {
       TopicArn: await getSnsTopicArn(SNS_TOPIC_NAME),
-      Message: `Extracted Data: ${JSON.stringify(extractedData)}`,
-      Subject: "Resume Extraction Result",
+      Message: `Your Applicant ID: ${applicantID}\nThanks for applying at our company. You will be contacted if you are shortlisted.`,
+      Subject: "Job Application Confirmation",
     };
 
     await sns.publish(snsParams).promise();
@@ -212,7 +212,8 @@ async function applyForJob(body) {
     const { email } = body;
     // const { email } = JSON.parse(body);
     const applicantID = generateApplicantID();
-    await sendApplicationEmail(email, applicantID);
+    await publishToSnsTopic(email, applicantID);
+    // await sendApplicationEmail(email, applicantID);
 
     return {
       statusCode: 200,
