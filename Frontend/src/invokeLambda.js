@@ -24,7 +24,7 @@ export const invokeLambdaFunction = async (path, body) => {
     Payload: JSON.stringify({
       path,
       httpMethod: "POST",
-      body: JSON.stringify(body),
+      body: path === "/upload" ? body : JSON.stringify(body),
     }),
   };
 
