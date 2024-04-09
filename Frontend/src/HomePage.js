@@ -41,25 +41,25 @@ function Home() {
         // });
         console.log("Resume uploaded to S3:", uploadResponse.data);
 
-        const body = {
-          Key: uploadResponse.data.result.key,
-          email: email,
-        };
-        const extractResponse = await fetch(`${API}/extract`, {
-          method: "POST",
-          body,
-        });
+        // const body = {
+        //   Key: uploadResponse.data.result.key,
+        //   email: email,
+        // };
+        // const extractResponse = await fetch(`${API}/extract`, {
+        //   method: "POST",
+        //   body,
+        // });
         // const extractResponse = await invokeLambdaFunction({
         //   path: "/extract",
         //   body,
         // });
-        console.log("Extracted resume details:", extractResponse);
+        // console.log("Extracted resume details:", extractResponse);
 
-        setFormData({
-          name: extractResponse.data.extractedData.name || "",
-          education: extractResponse.data.extractedData.education || "",
-          experience: extractResponse.data.extractedData.experience || "",
-        });
+        // setFormData({
+        //   name: extractResponse.data.extractedData.name || "",
+        //   education: extractResponse.data.extractedData.education || "",
+        //   experience: extractResponse.data.extractedData.experience || "",
+        // });
       } catch (error) {
         console.error("Error extracting data from resume:", error);
       }
