@@ -22,11 +22,16 @@ export const invokeLambdaFunction = async ({ path, body }) => {
   const params = {
     FunctionName: LAMBDA_FUNCTION_NAME,
     InvocationType: "RequestResponse",
-    Payload: JSON.stringify({
+    Payload: {
       path,
       httpMethod: "POST",
       body: path === "/upload" ? body.get("resume") : JSON.stringify(body),
-    }),
+    },
+    // Payload: JSON.stringify({
+    //   path,
+    //   httpMethod: "POST",
+    //   body: path === "/upload" ? body.get("resume") : JSON.stringify(body),
+    // }),
   };
 
   console.log("Lambda Params: ", params);
