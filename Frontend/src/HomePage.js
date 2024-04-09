@@ -49,6 +49,8 @@ function Home() {
         //   body: resume,
         // });
         console.log("Resume uploaded to S3:", uploadResponse);
+        const parsedData = JSON.parse(uploadResponse);
+        console.log(parsedData);
 
         // const body = {
         //   Key: uploadResponse.data.result.key,

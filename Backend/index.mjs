@@ -80,10 +80,11 @@ async function uploadResumeToS3(body) {
 async function extractTextFromResume(body) {
   console.log({ body });
   try {
-    const { Key, email } = JSON.parse(body);
+    const { Key, email } = body;
+    // const { Key, email } = JSON.parse(body);
     const params = {
       Bucket: S3_BUCKET_NAME,
-      Key: Key,
+      Key,
     };
     console.log({ params });
 
@@ -110,7 +111,7 @@ async function extractTextFromResume(body) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ extractedData, response }),
+      body: JSON.stringify({ extractedData }),
     };
   } catch (error) {
     return {
