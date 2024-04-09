@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Button, Grid, TextField, Typography } from "@material-ui/core";
 import { invokeLambdaFunction } from "./invokeLambda";
 
-const API = "https://lzy8s30gz1.execute-api.us-east-1.amazonaws.com/prod";
-// const API = "https://t86h0hvi91.execute-api.us-east-1.amazonaws.com/prod";
+const API = "https://5p6dha59v2.execute-api.us-east-1.amazonaws.com/prod";
 
 function Home() {
   const [resume, setResume] = useState(null);
