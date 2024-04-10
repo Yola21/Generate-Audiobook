@@ -1,12 +1,11 @@
 import AWS from "aws-sdk";
 
-const S3_BUCKET_NAME = "resume-parser-s3";
-const SNS_TOPIC_NAME = "ResumeParserSNS";
-const AWS_REGION = "us-east-1";
-const AWS_ACCESS_KEY_ID = "ASIATCKANRQAMDCMLUAQ";
-const AWS_SECRET_ACCESS_KEY = "ViYcGcxms0JeRVSOuyVaKxvgrYaJSu5YZ/ML5pFZ";
-const AWS_SESSION_TOKEN =
-  "IQoJb3JpZ2luX2VjEOD//////////wEaCXVzLXdlc3QtMiJHMEUCIQCG/mTxVqzn93CzY//sZe2wwt2WbeLRM3zyIzb8fxEifgIgZRiZBRRhUZnQYN5Zmn3pWsZZJWWG1Fl7Atp9iB5vkfYqqQIIGRAAGgwyMTExMjUzNzM5NTIiDNac83Cn5dkgwCaNMSqGAhhe8Ni9ylo65E5PHxIIpFVRj/zS2vzxe/ymgpKdrW/iNCtSoOTVyNoAzobF7nMSy+Xoc61ddCxyIBm/9CqbUtVlITUG7jLmAF4sKc/EyeZ9sjz3w1Tzpxxnd/lx1wEMdxzvDr4OpRKDah1XYILGDeS/15hfNYDTD+oBbOlwMtgaTfyYqdY0ELtx9128hnvVf/z8f3uB61H3UhwNVbLpkIIIGcT5gH7aaF5+eLW3gChlmxeyc58yUsZMkVW/Pxi2ZNCCp4Rbh72tyVOAfmv5NBRIApaPMNIXEIFa2eSepT5oS/ISqolFuqDv3NnDqpepVLCMVBYFTyVhdDfReFTF4rmA4LS5/lkw2MPVsAY6nQF6Dd2CzDEBF3AG9nL6WCfecOlEIL7tYhgqS29XNmNznzYNiX5ABsfTkvLvZ1f4UgUMP81Fa1QMhDvS0/xpFcgExqusDfjfvxxcf5vY45Z2XPeLh3tKwzMsjs25R/qchH4GgMYp9D6exDJJglBtG0ckGd1cmVviWjuV05Tl62Y1NjSnM+3T0HQWpTzhAafOEa9prNoiaWNaQ+ZZdKe4";
+const SNS_TOPIC_NAME = process.env.REACT_APP_SNS_TOPIC_NAME;
+const AWS_REGION = process.env.REACT_APP_AWS_REGION;
+const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID;
+const AWS_SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
+const AWS_SESSION_TOKEN = process.env.REACT_APP_AWS_SESSION_TOKEN;
+const S3_BUCKET_NAME = process.env.REACT_APP_S3_BUCKET_NAME;
 
 AWS.config.update({
   region: AWS_REGION,
@@ -105,8 +104,6 @@ async function extractTextFromResume(body) {
 
     const extractedData = extractInformationFromTextractResponse(response);
     console.log({ extractedData });
-
-    // await publishToSnsTopic(extractedData, email);
 
     return {
       statusCode: 200,
@@ -210,10 +207,8 @@ async function getSnsTopicArn(topicName) {
 async function applyForJob(body) {
   try {
     const { email } = body;
-    // const { email } = JSON.parse(body);
     const applicantID = generateApplicantID();
     await publishToSnsTopic(email, applicantID);
-    // await sendApplicationEmail(email, applicantID);
 
     return {
       statusCode: 200,
@@ -225,25 +220,6 @@ async function applyForJob(body) {
       body: JSON.stringify({ error: "Error applying for job" }),
     };
   }
-}
-
-async function sendApplicationEmail(email, applicantID) {
-  const params = {
-    Destination: {
-      ToAddresses: [email],
-    },
-    Message: {
-      Body: {
-        Text: {
-          Data: `Your Applicant ID: ${applicantID}\nThanks for applying at our company. You will be contacted if you are shortlisted.`,
-        },
-      },
-      Subject: { Data: "Job Application Confirmation" },
-    },
-    Source: "yashkhorja4@gmail.com", // Sender email address (must be verified in SES)
-  };
-
-  await ses.sendEmail(params).promise();
 }
 
 function generateApplicantID() {
